@@ -27,13 +27,14 @@ changelog:
     - '^docs:'
     - '^test:'
 brews:
-  name: lunch
-  github:
-    owner: game-of-morgan
-    name: homebrew-lunch
-  commit_author:
-    name: morganwowk
-    email: morgan.wowk@gmail.com
-  folder: Formula
-  homepage: "https://lunch.email/"
-  description: "CLI to check the lunch menu for this week at Bold Commerce."
+  -
+    name: lunch
+    github:
+      owner: game-of-morgan
+      name: homebrew-lunch
+    commit_author:
+      name: morganwowk
+      email: morgan.wowk@gmail.com
+    folder: Formula
+    homepage: "https://lunch.email/"
+    description: "CLI to check the lunch menu for this week at Bold Commerce."
