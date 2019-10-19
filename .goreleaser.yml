@@ -28,7 +28,7 @@ changelog:
     - '^test:'
 brews:
   -
-    name: lunch
+    name: cli
     github:
       owner: game-of-morgan
       name: homebrew-lunch
