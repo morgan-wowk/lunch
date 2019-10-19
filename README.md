@@ -8,11 +8,10 @@ CLI to check the lunch menu for this week.
 
 # Requirements
 
-* Install [go](https://golang.org/doc/install)
-* * `brew install go`
+* [Homebrew](https://brew.sh/)
 
 # Install
 
 ```shell
-$ go install github.com/game-of-morgan/lunch
+brew install game-of-morgan/lunch/lunch
 ```
