@@ -13,5 +13,6 @@ CLI to check the lunch menu for this week.
 # Install
 
 ```shell
+brew update
 brew install game-of-morgan/lunch/cli
 ```
