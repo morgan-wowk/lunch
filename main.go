@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"reflect"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -39,7 +41,6 @@ type menu struct {
 func main() {
 	var location string
 
-	weekday := time.Now().Weekday().String()
 	app := cli.NewApp()
 	app.Name = "lunch"
 	app.Usage = "Check the lunch for this week."
@@ -61,7 +62,7 @@ func main() {
 		smartparkURL := "https://cdn.contentful.com/spaces/sw4tprcfpvo7/entries?access_token=c04ffd4690c2804f7c772577cdd59065d5c3bfd3e9b06147905c11979a06be3c"
 
 		var url = fultzURL
-		if location == "smartpark" {
+		if strings.ToLower(location) == "smartpark" {
 			url = smartparkURL
 		}
 
@@ -95,65 +96,38 @@ func main() {
 		title := color.New(color.Bold, color.FgGreen, color.Underline).PrintlnFunc()
 		label := color.New(color.Bold, color.FgMagenta).PrintFunc()
 		text := color.New(color.FgCyan).PrintFunc()
-		bold := color.New(color.Bold).PrintFunc()
 
 		label("Week: ")
 		text(jsonObj.Items[0].Fields.WeekTitle)
 		text("\n")
 		label("Caterer: ")
 		text(jsonObj.Items[0].Fields.Caterer)
+		text("\n")
+		label("Location: ")
+		if strings.ToLower(location) == "smartpark" {
+			text("Smartpark")
+		} else {
+			text("Fultz")
+		}
 		text("\n\n")
 		title("Menu")
-		if !c.Bool("today") || weekday == "Monday" {
-			label("Monday:\n\t")
-			text(jsonObj.Items[0].Fields.Monday)
-			if jsonObj.Items[0].Fields.MondayVeg != nil {
-				text("\n\t")
-				bold("Vegetarian: ")
-				text(jsonObj.Items[0].Fields.MondayVeg)
-			}
-			text("\n")
-		}
-		if !c.Bool("today") || weekday == "Tuesday" {
-			label("Tuesday:\n\t")
-			text(jsonObj.Items[0].Fields.Tuesday)
-			if jsonObj.Items[0].Fields.TuesdayVeg != nil {
-				text("\n\t")
-				bold("Vegetarian: ")
-				text(jsonObj.Items[0].Fields.TuesdayVeg)
-			}
-			text("\n")
-		}
-		if !c.Bool("today") || weekday == "Wednesday" {
-			label("Wednesday:\n\t")
-			text(jsonObj.Items[0].Fields.Wednesday)
-			if jsonObj.Items[0].Fields.WednesdayVeg != nil {
-				text("\n\t")
-				bold("Vegetarian: ")
-				text(jsonObj.Items[0].Fields.WednesdayVeg)
-			}
-			text("\n")
-		}
-		if !c.Bool("today") || weekday == "Thursday" {
-			label("Thursday:\n\t")
-			text(jsonObj.Items[0].Fields.Thursday)
-			if jsonObj.Items[0].Fields.ThursdayVeg != nil {
-				text("\n\t")
-				bold("Vegetarian: ")
-				text(jsonObj.Items[0].Fields.ThursdayVeg)
-			}
-			text("\n")
-		}
-		if !c.Bool("today") || weekday == "Friday" {
-			label("Friday:\n\t")
-			text(jsonObj.Items[0].Fields.Friday)
-			if jsonObj.Items[0].Fields.FridayVeg != nil {
-				text("\n\t")
-				bold("Vegetarian: ")
-				text(jsonObj.Items[0].Fields.FridayVeg)
-			}
-			text("\n")
-		}
+
+		monday := jsonObj.Items[0].Fields.Monday
+		mondayVeg := jsonObj.Items[0].Fields.MondayVeg
+		tuesday := jsonObj.Items[0].Fields.Tuesday
+		tuesdayVeg := jsonObj.Items[0].Fields.TuesdayVeg
+		wednesday := jsonObj.Items[0].Fields.Wednesday
+		wednesdayVeg := jsonObj.Items[0].Fields.WednesdayVeg
+		thursday := jsonObj.Items[0].Fields.Thursday
+		thursdayVeg := jsonObj.Items[0].Fields.ThursdayVeg
+		friday := jsonObj.Items[0].Fields.Friday
+		fridayVeg := jsonObj.Items[0].Fields.FridayVeg
+
+		outputWeekday(monday, mondayVeg, "Monday", c.Bool("today"))
+		outputWeekday(tuesday, tuesdayVeg, "Tuesday", c.Bool("today"))
+		outputWeekday(wednesday, wednesdayVeg, "Wednesday", c.Bool("today"))
+		outputWeekday(thursday, thursdayVeg, "Thursday", c.Bool("today"))
+		outputWeekday(friday, fridayVeg, "Friday", c.Bool("today"))
 
 		return nil
 	}
@@ -161,5 +135,39 @@ func main() {
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+func outputWeekday(lunchDay interface{}, lunchDayVeg interface{}, labelText string, todayOnly bool) {
+	weekday := time.Now().Weekday().String()
+	label := color.New(color.Bold, color.FgMagenta).PrintFunc()
+	text := color.New(color.FgCyan).PrintFunc()
+	bold := color.New(color.Bold).PrintFunc()
+
+	if !todayOnly || weekday == labelText {
+		label(labelText + ":\n\t")
+		if reflect.TypeOf(lunchDay).Kind() == reflect.Slice {
+			text(strings.Join(lunchDay.([]string), "\n\t"))
+		} else {
+			text(lunchDay)
+		}
+		if lunchDayVeg != nil {
+			text("\n\t")
+			bold("Vegetarian: ")
+			if reflect.TypeOf(lunchDayVeg).Kind() == reflect.Slice {
+				vegSlice := lunchDayVeg.([]interface{})
+				if len(vegSlice) > 1 {
+					text("\n\t\t")
+				}
+				vegOptions := make([]string, len(vegSlice))
+				for i := 0; i < len(vegSlice); i++ {
+					vegOptions[i] = lunchDayVeg.([]interface{})[i].(string)
+				}
+				text(strings.Join(vegOptions, "\n\t\t"))
+			} else {
+				text(lunchDayVeg)
+			}
+		}
+		text("\n")
 	}
 }
